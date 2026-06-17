@@ -1,0 +1,12 @@
+# Konfigurasi opsional deploy Render (Infrastructure as Code).
+# Render → New → Blueprint → pilih repo ini.
+services:
+  - type: web
+    name: portal-tbc-hiv-jabar-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install && npm run seed
+    startCommand: npm start
+    envVars:
+      - key: DB_PATH
+        value: /tmp/data.db
