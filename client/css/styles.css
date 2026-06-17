@@ -1,11 +1,14 @@
 /* =====================================================================
    SI-JABAR Sehat — Design System (terinspirasi Atomic Health)
    Vanilla CSS: Flexbox + Grid, responsif, medical-tech premium.
+   5 Tema Warna: teal (default) · indigo · rose · amber · emerald
    ===================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 
-:root {
+/* ---- TEMA 1: Teal (default — Atomic Health) ---- */
+:root,
+[data-theme="teal"] {
   --bg: #ffffff;
   --bg-soft: #f4f9f8;
   --ink: #0f1e23;
@@ -14,6 +17,8 @@
   --primary-dark: #0a9c83;
   --secondary: #1971c2;
   --accent: #12b886;
+  --hero-from: #eafaf6;
+  --hero-to: #ffffff;
   --hiv: #e8590c;
   --tbc: #1971c2;
   --border: #e4eeec;
@@ -24,6 +29,102 @@
   --maxw: 1180px;
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
+}
+
+/* ---- TEMA 2: Indigo (biru tua profesional) ---- */
+[data-theme="indigo"] {
+  --bg: #ffffff;
+  --bg-soft: #f0f2ff;
+  --ink: #0f1535;
+  --ink-soft: #4a5270;
+  --primary: #4c6ef5;
+  --primary-dark: #3b5bdb;
+  --secondary: #7950f2;
+  --accent: #5c7cfa;
+  --hero-from: #eef0ff;
+  --hero-to: #ffffff;
+  --hiv: #f76707;
+  --tbc: #7950f2;
+  --border: #dee2f5;
+}
+
+/* ---- TEMA 3: Rose (warm pink/crimson medis) ---- */
+[data-theme="rose"] {
+  --bg: #ffffff;
+  --bg-soft: #fff5f7;
+  --ink: #2d1b24;
+  --ink-soft: #7a4a58;
+  --primary: #e64980;
+  --primary-dark: #c2255c;
+  --secondary: #f03e3e;
+  --accent: #f06595;
+  --hero-from: #ffecf2;
+  --hero-to: #ffffff;
+  --hiv: #f03e3e;
+  --tbc: #862e9c;
+  --border: #fdd8e5;
+}
+
+/* ---- TEMA 4: Amber (hangat, earthy-warm) ---- */
+[data-theme="amber"] {
+  --bg: #fffdf7;
+  --bg-soft: #fff8e1;
+  --ink: #2b1d06;
+  --ink-soft: #6b4c1a;
+  --primary: #f59f00;
+  --primary-dark: #e67700;
+  --secondary: #f76707;
+  --accent: #fab005;
+  --hero-from: #fff3cc;
+  --hero-to: #fffdf7;
+  --hiv: #e03131;
+  --tbc: #1971c2;
+  --border: #ffe8a3;
+}
+
+/* ---- TEMA 5: Emerald (hijau segar, alam) ---- */
+[data-theme="emerald"] {
+  --bg: #ffffff;
+  --bg-soft: #f0fdf4;
+  --ink: #052e16;
+  --ink-soft: #166534;
+  --primary: #16a34a;
+  --primary-dark: #15803d;
+  --secondary: #0891b2;
+  --accent: #22c55e;
+  --hero-from: #dcfce7;
+  --hero-to: #ffffff;
+  --hiv: #dc2626;
+  --tbc: #0891b2;
+  --border: #bbf7d0;
+}
+
+/* ---- Theme Switcher UI ---- */
+.theme-switcher {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+}
+.theme-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  transition: transform .2s ease, border-color .2s ease;
+  flex-shrink: 0;
+}
+.theme-dot:hover { transform: scale(1.18); }
+.theme-dot.active { border-color: var(--ink); transform: scale(1.15); }
+.theme-dot[data-t="teal"]    { background: #0bbf9f; }
+.theme-dot[data-t="indigo"]  { background: #4c6ef5; }
+.theme-dot[data-t="rose"]    { background: #e64980; }
+.theme-dot[data-t="amber"]   { background: #f59f00; }
+.theme-dot[data-t="emerald"] { background: #16a34a; }
+
+@media (max-width: 768px) {
+  .theme-switcher { margin-left: 0; }
 }
 
 * { box-sizing: border-box; }
@@ -72,7 +173,7 @@ img { max-width: 100%; }
 .nav-drawer-backdrop { display: none; }
 
 /* Hero */
-.hero { position: relative; overflow: hidden; padding: 168px 0 96px; background: linear-gradient(135deg, #eafaf6 0%, #ffffff 60%); }
+.hero { position: relative; overflow: hidden; padding: 168px 0 96px; background: linear-gradient(135deg, var(--hero-from) 0%, var(--hero-to) 60%); }
 .hero__grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; }
 .hero h1 { margin-bottom: .3em; }
 .hero p.lead { font-size: 1.2rem; max-width: 520px; }
@@ -194,7 +295,7 @@ input.invalid, select.invalid, textarea.invalid { border-color: #ffa8a8; box-sha
 .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
 
 /* Page header */
-.page-header { padding: 150px 0 56px; background: linear-gradient(135deg, #eafaf6, #ffffff); text-align: center; }
+.page-header { padding: 150px 0 56px; background: linear-gradient(135deg, var(--hero-from), var(--hero-to)); text-align: center; }
 .page-header p { max-width: 620px; margin: 0 auto; font-size: 1.1rem; }
 
 /* Scroll reveal */
