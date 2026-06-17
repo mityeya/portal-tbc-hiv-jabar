@@ -1,4 +1,7 @@
-// Seed database: buat tabel, kosongkan, isi data ilustratif (mock) + contoh pesanan.
+// Seed database: baca CSV Open Data Jabar sebagai sumber utama,
+// lalu isi contoh pesanan kit lab test.
+// Idempoten: aman dijalankan berulang kali.
+
 const fs = require('fs');
 const path = require('path');
 const db = require('./connection');
@@ -6,38 +9,46 @@ const db = require('./connection');
 const regions = JSON.parse(
   fs.readFileSync(path.join(__dirname, '..', 'data', 'geo-jabar.json'), 'utf-8')
 );
+const codeByName = new Map(regions.map((r) => [r.nama, r.kode_kabupaten_kota]));
 
+// ---- Reset (idempoten) ----
 db.exec('DELETE FROM cases; DELETE FROM kit_orders;');
 db.exec("DELETE FROM sqlite_sequence WHERE name IN ('cases','kit_orders');");
 
-const HIV_YEARS = [2018, 2019, 2020, 2021, 2022, 2023, 2024];
-const TBC_YEARS = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
+// ========================================================
+// SUMBER UTAMA: CSV Open Data Jabar
+// File: server/data/opendata_jabar.csv
+// Header: penyakit,nama_kabupaten_kota,jumlah_kasus,tahun
+// Format ini kompatibel dengan CSV resmi Open Data Jabar.
+// Untuk mengganti dengan data asli terbaru: cukup ganti file CSV
+// dan jalankan ulang: npm run seed
+// ========================================================
+const CSV_PATH = path.join(__dirname, '..', 'data', 'opendata_jabar.csv');
 
-function baseFor(region, penyakit) {
-  const seed = region.kode_kabupaten_kota % 100;
-  const isKota = region.nama.startsWith('KOTA');
-  const cityFactor = isKota ? 1.35 : 1;
-  if (penyakit === 'HIV') return Math.round((40 + seed * 7) * cityFactor);
-  return Math.round((300 + seed * 35) * cityFactor);
-}
+function loadCsv(filePath) {
+  const raw = fs.readFileSync(filePath, 'utf-8').trim();
+  const [header, ...lines] = raw.split(/\r?\n/);
+  const cols = header.split(',').map((c) => c.trim());
+  const idx = (name) => cols.indexOf(name);
 
-function buildRows() {
   const rows = [];
-  for (const region of regions) {
-    for (const [penyakit, years] of [['HIV', HIV_YEARS], ['TBC', TBC_YEARS]]) {
-      const tahunMax = years[years.length - 1];
-      const base = baseFor(region, penyakit);
-      for (const tahun of years) {
-        const factor = 1 + (tahun - tahunMax) * 0.04;
-        rows.push({
-          penyakit,
-          kode_kabupaten_kota: region.kode_kabupaten_kota,
-          nama_kabupaten_kota: region.nama,
-          jumlah_kasus: Math.max(0, Math.round(base * factor)),
-          satuan: 'ORANG', tahun, pelapor: null, sumber: 'opendata',
-        });
-      }
-    }
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const f = line.split(',');
+    const penyakit = f[idx('penyakit')].trim().toUpperCase();
+    const nama = f[idx('nama_kabupaten_kota')].trim().toUpperCase();
+    const jumlah = parseInt(f[idx('jumlah_kasus')].trim(), 10);
+    const tahun = parseInt(f[idx('tahun')].trim(), 10);
+    rows.push({
+      penyakit,
+      kode_kabupaten_kota: codeByName.get(nama) || null,
+      nama_kabupaten_kota: nama,
+      jumlah_kasus: jumlah,
+      satuan: 'ORANG',
+      tahun,
+      pelapor: null,
+      sumber: 'opendata',
+    });
   }
   return rows;
 }
@@ -46,10 +57,11 @@ const insertCase = db.prepare(`
   INSERT INTO cases (penyakit, kode_kabupaten_kota, nama_kabupaten_kota, jumlah_kasus, satuan, tahun, pelapor, sumber)
   VALUES (@penyakit, @kode_kabupaten_kota, @nama_kabupaten_kota, @jumlah_kasus, @satuan, @tahun, @pelapor, @sumber)
 `);
-const insertMany = db.transaction((rows) => { for (const r of rows) insertCase.run(r); });
-const caseRows = buildRows();
-insertMany(caseRows);
 
+const caseRows = loadCsv(CSV_PATH);
+db.transaction((rows) => { for (const r of rows) insertCase.run(r); })(caseRows);
+
+// ---- Contoh pesanan kit lab test ----
 const sampleOrders = [
   { nama_pemesan: 'dr. Sari Wulandari', instansi_faskes: 'Puskesmas Cibeunying', jenis_kit: 'HIV', jumlah: 50, nama_kabupaten_kota: 'KOTA BANDUNG', alamat_pengiriman: 'Jl. Padjadjaran No. 10, Bandung', kontak: '081234567890', status: 'Diproses', catatan: 'Untuk skrining bulanan' },
   { nama_pemesan: 'Ahmad Fauzi', instansi_faskes: 'RSUD Cibinong', jenis_kit: 'TBC', jumlah: 120, nama_kabupaten_kota: 'KABUPATEN BOGOR', alamat_pengiriman: 'Jl. KSR Dadi Kusmayadi, Cibinong', kontak: 'logistik@rsudcibinong.go.id', status: 'Dikirim', catatan: null },
@@ -63,29 +75,8 @@ const insertOrder = db.prepare(`
 `);
 db.transaction((rows) => { for (const r of rows) insertOrder.run(r); })(sampleOrders);
 
-console.log('Seed selesai.');
+console.log('Seed selesai (sumber: Open Data Jabar CSV).');
 console.log('  cases     :', caseRows.length, 'baris');
 console.log('  kit_orders:', sampleOrders.length, 'baris');
 console.log('  database  :', db.DB_PATH);
-
-// =====================================================================
-// ALTERNATIF: Importer CSV resmi Open Data Jabar (mudah diganti ke data asli)
-// Format header: penyakit,nama_kabupaten_kota,jumlah_kasus,tahun
-// Pakai: node db/seed.js --csv data/opendata.csv
-// const csvArg = process.argv.indexOf('--csv');
-// if (csvArg !== -1 && process.argv[csvArg + 1]) {
-//   const codeByName = new Map(regions.map(r => [r.nama.toUpperCase(), r.kode_kabupaten_kota]));
-//   const csv = fs.readFileSync(path.resolve(process.argv[csvArg + 1]), 'utf-8').trim();
-//   const [header, ...lines] = csv.split(/\r?\n/);
-//   const cols = header.split(',').map(c => c.trim());
-//   const idx = (n) => cols.indexOf(n);
-//   db.exec('DELETE FROM cases;');
-//   db.transaction(() => { for (const line of lines) {
-//     const f = line.split(','); const nama = f[idx('nama_kabupaten_kota')].trim().toUpperCase();
-//     insertCase.run({ penyakit: f[idx('penyakit')].trim().toUpperCase(), kode_kabupaten_kota: codeByName.get(nama) || null,
-//       nama_kabupaten_kota: nama, jumlah_kasus: parseInt(f[idx('jumlah_kasus')], 10), satuan: 'ORANG',
-//       tahun: parseInt(f[idx('tahun')], 10), pelapor: null, sumber: 'opendata' });
-//   } })();
-//   console.log('Import CSV selesai:', lines.length, 'baris');
-// }
-// =====================================================================
+console.log('  csv       :', CSV_PATH);
