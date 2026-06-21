@@ -1,0 +1,16 @@
+# Konfigurasi opsional deploy Render (Infrastructure as Code).
+# Render → New → Blueprint → pilih repo ini.
+#
+# Catatan: seed TIDAK lagi dijalankan saat build. Server akan auto-seed
+# saat start kalau DB kosong (lihat server/app.js), sehingga tetap terisi
+# walaupun filesystem Render (/tmp) ter-reset saat service tidur/restart.
+services:
+  - type: web
+    name: portal-tbc-hiv-jabar-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DB_PATH
+        value: /tmp/data.db

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lapor Kasus — SI-JABAR Sehat</title>
+  <meta name="description" content="Form pelaporan kasus TBC & HIV mandiri oleh fasilitas kesehatan (CRUD)." />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="container nav-inner">
+      <a href="index.html" class="brand"><img src="assets/logo.svg" alt="" class="brand-logo" />SI-JABAR Sehat</a>
+      <nav><ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="education.html">Education</a></li>
+        <li><a href="pesan-kit.html">Pesan Kit Lab</a></li>
+      </ul></nav>
+      <div class="nav-cta">
+        <div class="theme-switcher" aria-label="Pilih tema warna"></div>
+        <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <div class="nav-drawer-backdrop"></div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <p class="eyebrow">Form Submission</p>
+      <h1>Pelaporan Kasus Mandiri</h1>
+      <p>Fasilitas kesehatan dapat melaporkan jumlah kasus TBC &amp; HIV per wilayah. Data tersimpan dan langsung tampil di tabel laporan.</p>
+    </div>
+  </section>
+
+  <section class="section section--tint">
+    <div class="container" style="display:grid;grid-template-columns:1fr;gap:32px;max-width:920px">
+      <div class="card reveal">
+        <h3 id="form-title">Tambah Laporan Kasus</h3>
+        <form id="case-form" novalidate>
+          <div class="form-grid">
+            <div class="field"><label>Jenis Penyakit *</label>
+              <select name="penyakit"><option value="" disabled selected>Pilih penyakit</option><option value="HIV">HIV</option><option value="TBC">TBC</option></select>
+              <span class="error-text" id="err-penyakit"></span></div>
+            <div class="field"><label>Kabupaten/Kota *</label><select name="nama_kabupaten_kota"></select><span class="error-text" id="err-nama_kabupaten_kota"></span></div>
+            <div class="field"><label>Jumlah Kasus *</label><input type="number" name="jumlah_kasus" min="0" step="1" placeholder="mis. 25" /><span class="error-text" id="err-jumlah_kasus"></span></div>
+            <div class="field"><label>Tanggal Laporan *</label><input type="date" name="tanggal" min="2018-01-01" /><span class="error-text" id="err-tanggal"></span></div>
+            <div class="field"><label>Nama Faskes / Pelapor</label><input type="text" name="pelapor" placeholder="mis. Puskesmas Cibeunying" /><span class="error-text" id="err-pelapor"></span></div>
+            <div class="field"><label>Kontak Pelapor *</label><input type="text" name="kontak" placeholder="No. HP / email aktif" /><span class="error-text" id="err-kontak"></span></div>
+            <div class="field full"><label>Catatan / Gejala</label><textarea name="catatan" rows="3" placeholder="Ceritakan gejala atau catatan lain (opsional)"></textarea><span class="error-text" id="err-catatan"></span></div>
+            <div class="full"><p class="muted" style="font-size:.85rem;margin:0">&#128274; Kontak hanya digunakan petugas untuk verifikasi dan tidak ditampilkan ke publik.</p></div>
+          </div>
+          <div class="form-actions-center">
+            <button type="submit" class="btn btn-primary" id="submit-btn">Simpan Laporan</button>
+            <button type="button" class="btn btn-ghost" id="cancel-edit" style="display:none">Batal Edit</button>
+          </div>
+        </form>
+      </div>
+      <div class="reveal" data-guest-only>
+        <div class="card admin-locked">
+          <div class="admin-locked__icon" data-icon="lock"></div>
+          <h3>Daftar Laporan Masuk (Admin)</h3>
+          <p class="muted">Daftar laporan kasus berisi data sensitif (gejala &amp; kontak pelapor), sehingga hanya dapat diakses oleh admin.</p>
+          <a href="login.html?next=lapor.html" class="btn btn-primary"><span class="ic-inline" data-icon="lock"></span> Masuk sebagai Admin</a>
+        </div>
+      </div>
+      <div class="reveal" data-admin-only style="display:none">
+        <h3>Daftar Laporan Masuk</h3>
+        <p class="muted">Hanya menampilkan data dengan sumber <strong>laporan</strong> faskes.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Penyakit</th><th>Kabupaten/Kota</th><th>Tanggal</th><th class="num-cell">Jumlah</th><th>Pelapor</th><th>Kontak</th><th>Catatan</th><th></th></tr></thead>
+            <tbody id="reports-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="modal-backdrop" id="confirm-modal">
+    <div class="modal">
+      <h3 id="confirm-title">Konfirmasi</h3>
+      <p id="confirm-message" class="muted"></p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost btn-sm" id="confirm-cancel">Batal</button>
+        <button class="btn btn-danger btn-sm" id="confirm-ok">Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div><div class="brand"><img src="assets/logo.svg" alt="" class="brand-logo" />SI-JABAR Sehat</div><p>Portal visualisasi epidemiologi penyebaran TBC &amp; HIV di Provinsi Jawa Barat.</p></div>
+        <div><h4>Menu</h4><a href="index.html">Home</a><a href="about.html">About</a><a href="education.html">Education</a></div>
+        <div><h4>Layanan</h4><a href="lapor.html">Lapor Kasus</a><a href="pesan-kit.html">Pesan Kit Lab</a></div>
+        <div><h4>Sumber Data</h4><p>Open Data Provinsi Jawa Barat — Dinas Kesehatan.</p></div>
+      </div>
+      <div class="footer-bottom">© <span data-year></span> SI-JABAR Sehat · Tugas Besar Pengembangan Web — Bisnis Digital 2024.</div>
+    </div>
+  </footer>
+
+  <script src="js/theme.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/form.js"></script>
+</body>
+</html>

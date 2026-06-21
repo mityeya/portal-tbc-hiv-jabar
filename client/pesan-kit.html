@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pesan Kit Lab Test — SI-JABAR Sehat</title>
+  <meta name="description" content="Form pemesanan kit lab test TBC & HIV untuk fasilitas kesehatan (CRUD)." />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="container nav-inner">
+      <a href="index.html" class="brand"><img src="assets/logo.svg" alt="" class="brand-logo" />SI-JABAR Sehat</a>
+      <nav><ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="education.html">Education</a></li>
+        <li><a href="pesan-kit.html" class="active">Pesan Kit Lab</a></li>
+      </ul></nav>
+      <div class="nav-cta">
+        <a href="lapor.html" class="btn btn-primary btn-sm">Lapor Kasus</a>
+        <div class="theme-switcher" aria-label="Pilih tema warna"></div>
+        <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <div class="nav-drawer-backdrop"></div>
+  </header>
+
+  <section class="page-header">
+    <div class="container">
+      <p class="eyebrow">Pemesanan</p>
+      <h1>Pesan Kit Lab Test</h1>
+      <p>Fasilitas kesehatan dapat memesan kit lab test HIV, TBC, atau gabungan. Pantau status pesanan secara real-time.</p>
+    </div>
+  </section>
+
+  <section class="section section--tint">
+    <div class="container" style="display:grid;grid-template-columns:1fr;gap:32px;max-width:1000px">
+      <div class="card reveal">
+        <h3 id="order-form-title">Buat Pesanan Kit</h3>
+        <form id="order-form" novalidate>
+          <div class="form-grid">
+            <div class="field"><label>Nama Pemesan *</label><input type="text" name="nama_pemesan" placeholder="mis. dr. Sari Wulandari" /><span class="error-text" id="err-nama_pemesan"></span></div>
+            <div class="field"><label>Instansi / Faskes</label><input type="text" name="instansi_faskes" placeholder="mis. Puskesmas Cibeunying" /><span class="error-text" id="err-instansi_faskes"></span></div>
+            <div class="field"><label>Jenis Kit *</label><select name="jenis_kit"><option value="" disabled selected>Pilih jenis kit</option><option value="HIV">HIV</option><option value="TBC">TBC</option><option value="HIV+TBC">HIV+TBC</option></select><span class="error-text" id="err-jenis_kit"></span></div>
+            <div class="field"><label>Jumlah *</label><input type="number" name="jumlah" min="1" step="1" placeholder="mis. 50" /><span class="error-text" id="err-jumlah"></span></div>
+            <div class="field"><label>Kabupaten/Kota *</label><select name="nama_kabupaten_kota"></select><span class="error-text" id="err-nama_kabupaten_kota"></span></div>
+            <div class="field"><label>Kontak (telepon/email) *</label><input type="text" name="kontak" placeholder="mis. 081234567890" /><span class="error-text" id="err-kontak"></span></div>
+            <div class="field full"><label>Alamat Pengiriman *</label><input type="text" name="alamat_pengiriman" placeholder="Alamat lengkap pengiriman" /><span class="error-text" id="err-alamat_pengiriman"></span></div>
+            <div class="field full"><label>Catatan</label><textarea name="catatan" placeholder="Catatan tambahan (opsional)"></textarea><span class="error-text" id="err-catatan"></span></div>
+          </div>
+          <div class="order-summary" id="order-summary">
+            <div class="sum-row"><span>Harga satuan</span><strong id="sum-harga">&mdash;</strong></div>
+            <div class="sum-row"><span>Jumlah kit</span><strong id="sum-jumlah">0</strong></div>
+            <div class="sum-row sum-total"><span>Total bayar</span><strong id="sum-total">Rp0</strong></div>
+            <p class="muted sum-note">Harga: HIV Rp75.000 &middot; TBC Rp60.000 &middot; HIV+TBC Rp120.000 per kit.</p>
+          </div>
+          <div class="form-actions-center">
+            <button type="submit" class="btn btn-primary" id="order-submit-btn">Lanjut ke Pembayaran</button>
+            <button type="button" class="btn btn-ghost" id="order-cancel-edit" style="display:none">Batal Edit</button>
+          </div>
+        </form>
+      </div>
+      <div class="reveal" data-guest-only>
+        <div class="card admin-locked">
+          <div class="admin-locked__icon" data-icon="lock"></div>
+          <h3>Pengelolaan Pesanan (Admin)</h3>
+          <p class="muted">Daftar pesanan masuk, verifikasi pembayaran, dan ubah status hanya dapat diakses oleh admin.</p>
+          <a href="login.html?next=pesan-kit.html" class="btn btn-primary"><span class="ic-inline" data-icon="lock"></span> Masuk sebagai Admin</a>
+        </div>
+      </div>
+      <div class="reveal" data-admin-only style="display:none">
+        <h3>Daftar Pesanan Masuk</h3>
+        <div class="toolbar">
+          <div class="field"><label>Status</label><select id="of-status"><option value="">Semua Status</option><option>Menunggu</option><option>Diproses</option><option>Dikirim</option><option>Selesai</option></select></div>
+          <div class="field field-grow"><label>Cari</label><input id="of-search" type="text" placeholder="Cari pemesan / faskes / wilayah…" /></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Pemesan</th><th>Kit</th><th class="num-cell">Jumlah</th><th class="num-cell">Total</th><th>Wilayah</th><th>Status</th><th></th></tr></thead>
+            <tbody id="orders-tbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="orders-pagination"></div>
+        <p class="muted" style="margin-top:10px">Tombol <strong>Status</strong> akan menggeser status pesanan (Menunggu → Diproses → Dikirim → Selesai).</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="modal-backdrop" id="confirm-modal">
+    <div class="modal">
+      <h3 id="confirm-title">Konfirmasi</h3>
+      <p id="confirm-message" class="muted"></p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost btn-sm" id="confirm-cancel">Batal</button>
+        <button class="btn btn-primary btn-sm" id="confirm-ok">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="qris-modal">
+    <div class="modal modal-qris">
+      <h3>Pembayaran QRIS</h3>
+      <p class="muted">Scan QR di bawah dengan e-wallet / m-banking Anda, lalu unggah bukti pembayaran. <em>(Simulasi pembayaran untuk keperluan demo akademik.)</em></p>
+      <div class="qris-box">
+        <div class="qris-amount" id="qris-amount">Rp0</div>
+        <canvas id="qris-canvas" width="220" height="220"></canvas>
+        <div class="qris-merchant">SI-JABAR Sehat &middot; NMID: ID9990000000000 &middot; QRIS</div>
+      </div>
+      <div class="field full">
+        <label>Unggah bukti pembayaran *</label>
+        <input type="file" id="bukti-input" accept="image/*" />
+        <img id="bukti-preview" class="bukti-preview" alt="Pratinjau bukti" style="display:none" />
+        <span class="error-text" id="err-bukti"></span>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost btn-sm" id="qris-cancel">Batal</button>
+        <button class="btn btn-primary btn-sm" id="qris-confirm">Saya Sudah Bayar &amp; Kirim</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div><div class="brand"><img src="assets/logo.svg" alt="" class="brand-logo" />SI-JABAR Sehat</div><p>Portal visualisasi epidemiologi penyebaran TBC &amp; HIV di Provinsi Jawa Barat.</p></div>
+        <div><h4>Menu</h4><a href="index.html">Home</a><a href="about.html">About</a><a href="education.html">Education</a></div>
+        <div><h4>Layanan</h4><a href="lapor.html">Lapor Kasus</a><a href="pesan-kit.html">Pesan Kit Lab</a></div>
+        <div><h4>Sumber Data</h4><p>Open Data Provinsi Jawa Barat — Dinas Kesehatan.</p></div>
+      </div>
+      <div class="footer-bottom">© <span data-year></span> SI-JABAR Sehat · Tugas Besar Pengembangan Web — Bisnis Digital 2024.</div>
+    </div>
+  </footer>
+
+  <script src="js/theme.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="js/order.js"></script>
+</body>
+</html>

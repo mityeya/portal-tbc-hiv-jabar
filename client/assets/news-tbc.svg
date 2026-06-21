@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200" role="img" aria-label="Berita TBC">
+  <defs><linearGradient id="news-tbc-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1864ab"/><stop offset="1" stop-color="#1098ad"/></linearGradient></defs>
+  <rect width="400" height="200" fill="url(#news-tbc-g)"/>
+  <circle cx="330" cy="36" r="72" fill="rgba(255,255,255,0.08)"/>
+  <circle cx="60" cy="178" r="58" fill="rgba(255,255,255,0.08)"/>
+  <path d="M44 112 H150 l20 -50 28 96 20 -60 14 26 H360" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="360" cy="124" r="6" fill="#ffffff"/>
+</svg>
